@@ -1,0 +1,29 @@
+Escape implements just enough of the Deliverance concept to be useful to me on GAE
+
+Requires only the standard lib and py-dom-xpath http://code.google.com/p/py-dom-xpath/
+
+WSGI Code patterned after the XSLT Middleware found at:
+http://www.decafbad.com/2005/07/xmlwiki/lib/xmlwiki/xslfilter.py
+
+Example:
+
+import escape
+class Theme(escape.Filter):
+    def __init__(self, app):
+        escape.Filter.__init__(self, app)
+        self.ruleset = self.get_rules()
+    def get_rules(self):
+        template = '''<html><head><title>Site - </title></head><body><div id="content"></div></body></html>'''
+        return [(lambda x,y,z: True, self.main_transform, template)]
+    def main_transform(self, input_doc, template_doc):
+        #Append content <title /> to template <title />
+        escape.append(input_doc, '//head/title/(*|text())', template_doc, '//head/title')
+        
+        #Delete content <title /> so that it doesn't get copied twice
+        escape.drop(input_doc, '//head/title')
+        
+        #Copy all contents of <head /> to template
+        escape.append(input_doc, '//head/title', template_doc, '//head')
+        
+        #Copy all contents of <body /> to <div id="content" />
+        escape.append(input_doc, '//body/(*|text())', template_doc, "//body/div[@id='content']")
