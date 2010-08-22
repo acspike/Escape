@@ -17,13 +17,13 @@ class Theme(escape.Filter):
         return [(lambda x,y,z: True, self.main_transform, template)]
     def main_transform(self, input_doc, template_doc):
         #Append content <title /> to template <title />
-        escape.append(input_doc, '//head/title/(*|text())', template_doc, '//head/title')
+        escape.append(input_doc, '//head/title/node()', template_doc, '//head/title')
         
         #Delete content <title /> so that it doesn't get copied twice
         escape.drop(input_doc, '//head/title')
         
         #Copy all contents of <head /> to template
-        escape.append(input_doc, '//head/title', template_doc, '//head')
+        escape.append(input_doc, '//head/node()', template_doc, '//head')
         
         #Copy all contents of <body /> to <div id="content" />
-        escape.append(input_doc, '//body/(*|text())', template_doc, "//body/div[@id='content']")
+        escape.append(input_doc, '//body/node()', template_doc, "//body/div[@id='content']")
