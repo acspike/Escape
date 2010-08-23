@@ -23,11 +23,26 @@ def append(from_doc, from_path, to_doc, to_path):
 
 def prepend(from_doc, from_path, to_doc, to_path):
     '''append one or more nodes from the source doc to a node in the destination doc'''
-    pass
+    to_node = xpath.findnode(to_path, to_doc)
+    if to_node:
+        from_nodes = xpath.find(from_path, from_doc)
+        first = to_node.firstChild
+        if first:
+            for x in from_nodes:
+                to_node.insertBefore(x, first)
+        else:    
+            for x in from_nodes:
+                to_node.appendChild(x)
 
 def replace(from_doc, from_path, to_doc, to_path):
     '''replace one node in the destination doc with one or more nodes from the source doc'''
-    pass
+    to_node = xpath.findnode(to_path, to_doc)
+    if to_node:
+        parent = to_node.parentNode
+        from_nodes = xpath.find(from_path, from_doc)
+        for x in from_nodes:
+            parent.insertBefore(x, to_node)
+        parent.removeChild(to_node)
 
 def drop(from_doc, from_path):
     '''drop one or more nodes from a doc'''
