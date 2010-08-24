@@ -57,13 +57,18 @@ class Filter(object):
         self.status = '200 OK'
         self.headers = []
         self.exc_info = None
+        self.body = []
         # ruleset: list of tuples in the form (test(status, headers, env), transform(doc, template), template_str)
         self.ruleset = []
-
+        
+    def write(self, body):
+        self.body.append(body)
+        
     def start_response(self, status, response_headers, exc_info=None):
         self.status = status
         self.headers = response_headers
         self.exc_info = exc_info
+        return self.write
         
     def __call__(self, environ, start_response):
         self.environ = environ
@@ -85,7 +90,8 @@ class Filter(object):
         input_doc = None
         if rules:
             try:
-                input_doc = parseString(''.join(list(input_iter))).documentElement
+                input_str = ''.join(self.body) + ''.join(list(input_iter))
+                input_doc = parseString(input_str).documentElement
             except ExpatError:
                 pass
         
@@ -114,6 +120,6 @@ class Filter(object):
                     header_value = len(output)
                 output_headers.append((header_name,header_value))
         
-        self.server_start_response(self.status, output_headers, self.exc_info)
+        server_write = self.server_start_response(self.status, output_headers, self.exc_info)
         return output_iter
 
