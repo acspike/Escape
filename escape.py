@@ -7,7 +7,7 @@
 #
 
 
-from xml.dom.minidom import parseString
+from xml.dom.minidom import parseString, Node
 from xml.parsers.expat import ExpatError
 
 import xpath
@@ -19,7 +19,10 @@ def append(from_doc, from_path, to_doc, to_path):
     if to_node:
         from_nodes = xpath.find(from_path, from_doc)
         for x in from_nodes:
-            to_node.appendChild(x)
+            if x.nodeType == Node.ATTRIBUTE_NODE:
+                to_node.setAttribute(x.name, x.value)
+            else:
+                to_node.appendChild(x)
 
 def prepend(from_doc, from_path, to_doc, to_path):
     '''append one or more nodes from the source doc to a node in the destination doc'''
@@ -91,7 +94,7 @@ class Filter(object):
         if rules:
             try:
                 input_str = ''.join(self.body) + ''.join(list(input_iter))
-                input_doc = parseString(input_str).documentElement
+                input_doc = parseString(input_str)
             except ExpatError:
                 pass
         
@@ -104,7 +107,7 @@ class Filter(object):
             for rule in rules:
                 test, transform, template_str = rule
                 try: 
-                    template_doc = parseString(template_str).documentElement
+                    template_doc = parseString(template_str)
                 except ExpatError:
                     continue
                 transform(input_doc, template_doc)
