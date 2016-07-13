@@ -6,6 +6,7 @@
 # http://www.decafbad.com/2005/07/xmlwiki/lib/xmlwiki/xslfilter.py
 #
 
+from itertools import chain
 
 from xml.dom.minidom import parseString, Node
 from xml.parsers.expat import ExpatError
@@ -101,7 +102,7 @@ class Filter(object):
         # if no rules or parse failure return original
         if len(rules)==0 or input_doc is None:
             output_headers = self.headers
-            output_iter = input_iter
+            output_iter = chain(self.body, input_iter)
         else:       
             # apply applicable rules in turn
             for rule in rules:
@@ -120,7 +121,7 @@ class Filter(object):
             # copy headers to output and adjust length
             for header_name,header_value in self.headers:
                 if header_name.lower() == 'content-length':
-                    header_value = len(output)
+                    header_value = str(len(output))
                 output_headers.append((header_name,header_value))
         
         server_write = self.server_start_response(self.status, output_headers, self.exc_info)
